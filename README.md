@@ -1,21 +1,25 @@
-# shop_admin
+# vue后台管理
 
-> A Vue.js project
+1.菜单管理 ok 
 
-## Build Setup
+2.角色管理  ok
 
-``` bash
-# install dependencies
-npm install
+3.管理员管理  ok
 
-# serve with hot reload at localhost:8080
-npm run dev
+4.商品分类  ok
 
-# build for production with minification
-npm run build
+5.商品规格  ok
 
-# build for production and view the bundle analyzer report
-npm run build --report
-```
+6.商品管理 ok
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+7.会员管理  ok
+
+8.轮播图管理 ok
+
+9.秒杀活动  ok
+
+10.权限已经  ok
+
+11.动态导航  ok
+
+所有基本功能已经做完，缺验证，缺首页图表
