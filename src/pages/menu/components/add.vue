@@ -1,8 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="info.isAdd?'添加菜单':'编辑菜单' " :visible.sync="info.isshow"
-    @closed="cancel"
-    >
+    <el-dialog :title="info.isAdd?'添加菜单':'编辑菜单' " :visible.sync="info.isshow" @closed="cancel">
       <el-form>
         <div class="redParent">
           <span class="red">*</span>
@@ -14,6 +12,7 @@
           <span class="red">*</span>
           <el-form-item label="上级菜单" label-width="100px">
             <el-select v-model="user.pid" @change="changePid">
+              <el-option value  label="--请选择--" disabled></el-option>
               <el-option :value="0" label="顶级菜单"></el-option>
               <!-- 需要一段数据 -->
               <el-option v-for="item in list" :key="item.id" :value="item.id" :label="item.title"></el-option>
@@ -71,7 +70,7 @@ export default {
   data() {
     return {
       user: {
-        pid: 0,
+        pid: '',
         title: "",
         icon: "",
         type: 1,
@@ -92,15 +91,15 @@ export default {
     // 取消
     cancel() {
       //45.编辑清空数据
-      if(!this.info.isAdd){
-        this.empty()
+      if (!this.info.isAdd) {
+        this.empty();
       }
       this.info.isshow = false;
     },
     // 清空数据
     empty() {
       this.user = {
-        pid: 0,
+        pid: '',
         title: "",
         icon: "",
         type: 1,
@@ -108,30 +107,41 @@ export default {
         status: 1,
       };
     },
-    changePid(){
-      if (this.user.pid==0) {
-        this.user.type=1
-      }else{
-        this.user.type=2
+    changePid() {
+      if (this.user.pid == 0) {
+        this.user.type = 1;
+      } else {
+        this.user.type = 2;
       }
+    },
+    chenckProps() {
+      return new Promise((resolve, reject) => {
+        if (this.user.title == "") {
+          errorMsg("菜单名称不能为空");
+          return false;
+        }
+        if (this.user.pid==='') {
+           errorMsg("菜单分类不能为空");
+          return false;
+        }
+        resolve();
+      });
     },
     // 添加
     add() {
-      if (this.user.title == "") {
-        errorMsg("菜单名称不能为空");
-        return false;
-      }
-      reqMenuAdd(this.user).then((res) => {
-        if (res.data.code == 200) {
-          // 提示添加成功
-          successMsg(res.data.msg);
-          // 弹框消失
-          this.cancel();
-          // 清空数据
-          this.empty();
-          // 通知父组件重新获取列表
-          this.$emit("init");
-        }
+      this.chenckProps().then(() => {
+        reqMenuAdd(this.user).then((res) => {
+          if (res.data.code == 200) {
+            // 提示添加成功
+            successMsg(res.data.msg);
+            // 弹框消失
+            this.cancel();
+            // 清空数据
+            this.empty();
+            // 通知父组件重新获取列表
+            this.$emit("init");
+          }
+        });
       });
     },
     getOne(id) {
@@ -144,16 +154,18 @@ export default {
       });
     },
     update() {
-      reqMenuUpdate(this.user).then((res) => {
-        if (res.data.code === 200) {
-          successMsg(res.data.msg);
-          // 关闭弹框
-          this.cancel()
-          // 清空数据
-          this.empty();
-           //刷新list
-          this.$emit("init")
-        }
+      this.chenckProps().then(() => {
+        reqMenuUpdate(this.user).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            // 关闭弹框
+            this.cancel();
+            // 清空数据
+            this.empty();
+            //刷新list
+            this.$emit("init");
+          }
+        });
       });
     },
   },
@@ -161,5 +173,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

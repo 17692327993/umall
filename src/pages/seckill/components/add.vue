@@ -135,20 +135,61 @@ export default {
         status: 1, //状态  1正常2禁用
       };
     },
+    checkProps() {
+      /*
+       dateTime: "",
+      data: {
+        title: "", //限时秒杀名称
+        begintime: "", //开始时间
+        endtime: "", //结束时间
+        first_cateid: "", //一级分类
+        second_cateid: "", //二级分类
+        goodsid: "", //活动编号
+      */
+      return new Promise((resolve, reject) => {
+        if (this.data.title==='') {
+          errorMsg("秒杀名称不能为空");
+          return;
+        }
+        if (!this.dateTime[0]) {
+          errorMsg("活动开始时间不能为空");
+          return;
+        }
+        if (!this.dateTime[1]) {
+          errorMsg("活动结束时间不能为空");
+          return;
+        }
+        if (!this.data.first_cateid) {
+          errorMsg("一级分类不能为空");
+          return;
+        }
+        if (!this.data.second_cateid) {
+          errorMsg("二级分类不能为空");
+          return;
+        }
+        if (!this.data.goodsid) {
+          errorMsg("商品不能为空");
+          return;
+        }
+        resolve();
+      });
+    },
     // 添加
     add() {
-      this.data.begintime = Date.parse(new Date(this.dateTime[0])); //开始时间
-      this.data.endtime = Date.parse(new Date(this.dateTime[1])); //结束时间
-      reqSecKillAdd(this.data).then((res) => {
-        if (res.data.code === 200) {
-          successMsg(res.data.msg);
-          // 弹框关闭
-          this.cancel();
-          // 清空数据
-          this.empty();
-          // 刷新列表
-          this.seckillList();
-        }
+      this.checkProps().then(() => {
+        this.data.begintime = Date.parse(new Date(this.dateTime[0])); //开始时间
+        this.data.endtime = Date.parse(new Date(this.dateTime[1])); //结束时间
+        reqSecKillAdd(this.data).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            // 弹框关闭
+            this.cancel();
+            // 清空数据
+            this.empty();
+            // 刷新列表
+            this.seckillList();
+          }
+        });
       });
     },
     // 获取一条数据
@@ -162,25 +203,26 @@ export default {
           this.getCateList();
           // 获取商品信息
           this.getGoodsInfo();
-          let startTime=this.formatDateTime(res.data.list.begintime)
-          let endTime=this.formatDateTime(res.data.list.endtime)
-          this.dateTime=[startTime,endTime]
-        
+          let startTime = this.formatDateTime(res.data.list.begintime);
+          let endTime = this.formatDateTime(res.data.list.endtime);
+          this.dateTime = [startTime, endTime];
         }
       });
     },
     // 真正的修改
     update() {
-      this.data.begintime = Date.parse(new Date(this.dateTime[0])); //开始时间
-      this.data.endtime = Date.parse(new Date(this.dateTime[1])); //结束时间
-      reqSecKillEdit(this.data).then((res) => {
-        if (res.data.code === 200) {
-          successMsg(res.data.msg);
-          this.cancel();
-          this.empty();
-          // 刷新列表
-          this.seckillList();
-        }
+      this.checkProps().then(() => {
+        this.data.begintime = Date.parse(new Date(this.dateTime[0])); //开始时间
+        this.data.endtime = Date.parse(new Date(this.dateTime[1])); //结束时间
+        reqSecKillEdit(this.data).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            this.cancel();
+            this.empty();
+            // 刷新列表
+            this.seckillList();
+          }
+        });
       });
     },
     // 一级分类变了，获取二级分类
@@ -216,7 +258,7 @@ export default {
     },
     /*时间戳转换成-年月日时分秒*/
     formatDateTime(inputTime) {
-      inputTime=Number(inputTime)
+      inputTime = Number(inputTime);
       //inputTime为13位
       var date = new Date(inputTime);
       var y = date.getFullYear();

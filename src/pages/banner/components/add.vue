@@ -10,8 +10,13 @@
         </div>
         <el-form-item label="图片" label-width="100px">
           <div class="img-box">
-            <el-upload class="avatar-uploader" action="#" :show-file-list="false" :on-change="changImg">
-              <img v-if="imgUrl" :src="imgUrl" class="avatar"  />
+            <el-upload
+              class="avatar-uploader"
+              action="#"
+              :show-file-list="false"
+              :on-change="changImg"
+            >
+              <img v-if="imgUrl" :src="imgUrl" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
           </div>
@@ -33,7 +38,11 @@
 
 <script>
 import { errorMsg, successMsg } from "../../../utils/alert";
-import { reqBannerAdd, reqBannerGetOne, reqBannerEdit } from "../../../utils/http";
+import {
+  reqBannerAdd,
+  reqBannerGetOne,
+  reqBannerEdit,
+} from "../../../utils/http";
 import path from "path";
 export default {
   props: ["info", "list"],
@@ -66,54 +75,65 @@ export default {
         status: 1, //状态  1正常2禁用
       };
     },
+    checkProps() {
+      return new Promise((resolve, reject) => {
+        if (!this.data.title) {
+          errorMsg("轮播图名称不能为空！");
+          return;
+        }
+        if (this.data.img===null) {
+          errorMsg("轮播图不能为空！");
+          return;
+        }
+        resolve();
+      });
+    },
     // 添加
     add() {
-      if (!this.data.title) {
-        errorMsg("轮播图名称不能为空！");
-        return;
-      }
-      reqBannerAdd(this.data).then((res) => {
-        if (res.data.code === 200) {
-          successMsg(res.data.msg);
-          // 弹框关闭
-          this.cancel();
-          // 清空数据
-          this.empty();
-          // 通知父组件刷新列表
-          this.$emit("init");
-        }
+      this.checkProps().then(() => {
+        reqBannerAdd(this.data).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            // 弹框关闭
+            this.cancel();
+            // 清空数据
+            this.empty();
+            // 通知父组件刷新列表
+            this.$emit("init");
+          }
+        });
       });
     },
     // 获取一条数据
     getOne(id) {
       reqBannerGetOne({ id }).then((res) => {
-       
         if (res.data.code == 200) {
           this.data = res.data.list;
-        //   // 补id
+          //   // 补id
           this.data.id = id;
-       
-        //   // 处理图片
+
+          //   // 处理图片
           this.imgUrl = this.$pre + this.data.img;
         }
       });
     },
     // 真正的修改
     update() {
-      reqBannerEdit(this.data).then((res) => {
-        if (res.data.code === 200) {
-          successMsg(res.data.msg);
-          this.cancel();
-          this.empty();
-          this.$emit("init");
-        }
+      this.checkProps().then(() => {
+        reqBannerEdit(this.data).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.$emit("init");
+          }
+        });
       });
     },
     // 修改图片
     changImg(e) {
-    
       let file = e.raw;
-    
+
       // 获取扩展名
       let extArr = [".png", ".jpeg", ".jpg", ".gif"];
       let extname = path.extname(file.name);
@@ -132,29 +152,28 @@ export default {
 </script>
 
 <style scoped>
-
 /* stylus的穿透 ，也就是让样式级别更高，比行内样式还高，只能在vue的stylus中使用，less，sass都不支持 */
- .img-box >>>.avatar-uploader .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .avatar-uploader .el-upload:hover {
-    border-color: #409EFF;
-  }
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-  .avatar {
-    width: 178px;
-    height: 178px;
-    display: block;
-  }
+.img-box >>> .avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

@@ -9,7 +9,12 @@
               <el-option value label="--请选择--" disabled></el-option>
               <el-option :value="0" label="顶级分类"></el-option>
               <!-- 需要一段数据 -->
-              <el-option v-for="item in list" :key="item.id" :value="item.id" :label="item.catename"></el-option>
+              <el-option
+                v-for="item in list"
+                :key="item.id"
+                :value="item.id"
+                :label="item.catename"
+              ></el-option>
             </el-select>
           </el-form-item>
         </div>
@@ -23,7 +28,7 @@
         <el-form-item label="图片" label-width="100px" v-if="data.pid!=0">
           <div class="imgbox">
             +
-            <img  v-if="imgUrl" :src="imgUrl" alt  />
+            <img v-if="imgUrl" :src="imgUrl" alt />
             <!-- 弹框消失，imgUrl也置空，但是input标签上的文件没有置空，如果想要input置空。需要input绑定v-if -->
             <input v-if="info.isshow" type="file" class="fileImg" @change="changImg" />
           </div>
@@ -45,9 +50,9 @@
 
 <script>
 import { errorMsg, successMsg } from "../../../utils/alert";
-import { reqCateAdd,reqCateDetail,reqCateEdit } from "../../../utils/http";
+import { reqCateAdd, reqCateDetail, reqCateEdit } from "../../../utils/http";
 import path from "path";
-import {mapActions,mapGetters} from "vuex";
+import { mapActions, mapGetters } from "vuex";
 export default {
   props: ["info"],
   data() {
@@ -67,7 +72,7 @@ export default {
       //   如果是编辑，就清空数据
       if (!this.info.isAdd) {
         this.empty();
-        this.info.isAdd=true
+        this.info.isAdd = true;
       }
       this.info.isshow = false;
     },
@@ -76,53 +81,66 @@ export default {
       // 展示的图片清空，不然会检测不到change事件的改变
       this.imgUrl = "";
       this.data = {
-        pid: 0, //上级分类编号
+        pid:'', //上级分类编号
         catename: "", //商品分类名称
         img: null, //图片(文件，一般用于二级分类)
         status: 1, //状态  1正常2禁用
       };
     },
+    checkProps() {
+      return new Promise((resolve, reject) => {
+        if (this.data.pid==='') {
+          errorMsg("上级分类不能为空！");
+          return;
+        }
+        if (!this.data.catename) {
+          errorMsg("分类名称不能为空！");
+          return;
+        }
+        resolve();
+      });
+    },
     // 添加
     add() {
-      if (!this.data.catename) {
-        errorMsg("分类名称不能为空！");
-        return;
-      }
-      reqCateAdd(this.data).then((res) => {
-        if (res.data.code === 200) {
-          successMsg(res.data.msg);
-          // 弹框关闭
-          this.cancel();
-          // 清空数据
-          this.empty();
-          // 刷新列表
-          this.reqList()
-        }
+      this.checkProps().then(() => {
+        reqCateAdd(this.data).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            // 弹框关闭
+            this.cancel();
+            // 清空数据
+            this.empty();
+            // 刷新列表
+            this.reqList();
+          }
+        });
       });
     },
     // 获取一条数据
-    getOne(id){
-      reqCateDetail({id}).then(res=>{
-        if (res.data.code==200) {
-          this.data=res.data.list;
+    getOne(id) {
+      reqCateDetail({ id }).then((res) => {
+        if (res.data.code == 200) {
+          this.data = res.data.list;
           // 补id
-          this.data.id=id
+          this.data.id = id;
           // 处理图片
-          this.imgUrl=this.$pre+this.data.img;
+          this.imgUrl = this.$pre + this.data.img;
         }
-      })
+      });
     },
     // 真正的修改
     update() {
-      reqCateEdit(this.data).then(res=>{
-        if (res.data.code===200) {
-          successMsg(res.data.msg)
-          this.cancel()
-          this.empty();
-          // 刷新列表
-          this.reqList()
-        }
-      })
+      this.checkProps().then(() => {
+        reqCateEdit(this.data).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            this.cancel();
+            this.empty();
+            // 刷新列表
+            this.reqList();
+          }
+        });
+      });
     },
     // 修改图片
     changImg(e) {
@@ -146,15 +164,14 @@ export default {
       this.data.img = file;
     },
     ...mapActions({
-      "reqList":"cate/reqList"
-    })
+      reqList: "cate/reqList",
+    }),
   },
-  computed:{
+  computed: {
     ...mapGetters({
-      "list":"cate/list"
-    })
-  }
-  
+      list: "cate/list",
+    }),
+  },
 };
 </script>
 

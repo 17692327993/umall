@@ -84,30 +84,37 @@ export default {
         status: 1, //状态  1正常2禁用 --number
       };
     },
+    checkProps() {
+      return new Promise((resolve, reject) => {
+        if (!this.data.roleid) {
+          errorMsg("请选择所属角色");
+          return;
+        }
+        if (!this.data.username) {
+          errorMsg("请填写用户名");
+          return;
+        }
+        if (!this.data.password) {
+          errorMsg("请填写密码");
+          return;
+        }
+        resolve();
+      });
+    },
     // 添加
     add() {
-      if (!this.data.roleid) {
-        errorMsg("请选择所属角色");
-        return;
-      }
-      if (!this.data.username) {
-        errorMsg("请填写用户名");
-        return;
-      }
-      if (!this.data.password) {
-        errorMsg("请填写密码");
-        return;
-      }
-      reqManageAdd(this.data).then((res) => {
-        if (res.data.code == 200) {
-          successMsg(res.data.msg);
-          // 通知父组件，刷新列表
-          this.$emit("init");
-          // 弹框关闭
-          this.cancel();
-          // 清空数据
-          this.empty();
-        }
+      this.checkProps().then(() => {
+        reqManageAdd(this.data).then((res) => {
+          if (res.data.code == 200) {
+            successMsg(res.data.msg);
+            // 通知父组件，刷新列表
+            this.$emit("init");
+            // 弹框关闭
+            this.cancel();
+            // 清空数据
+            this.empty();
+          }
+        });
       });
     },
     // 获取一条数据
@@ -121,13 +128,15 @@ export default {
     },
     // 真正的更新
     update() {
-      reqManageUpdate(this.data).then((res) => {
-        if (res.data.code === 200) {
-          successMsg(res.data.msg);
-         this.cancel();
-        //  通知父组件刷新列表
-        this.$emit("init")
-        }
+      this.checkProps().then(() => {
+        reqManageUpdate(this.data).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
+            this.cancel();
+            //  通知父组件刷新列表
+            this.$emit("init");
+          }
+        });
       });
     },
   },

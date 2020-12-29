@@ -36,7 +36,12 @@
 
 <script>
 import { successMsg, errorMsg } from "../../../utils/alert";
-import { reqMenuList, reqRoleAdd, reqGetOne,reqRoleUpdate } from "../../../utils/http";
+import {
+  reqMenuList,
+  reqRoleAdd,
+  reqGetOne,
+  reqRoleUpdate,
+} from "../../../utils/http";
 import { mapActions, mapGetters } from "vuex";
 export default {
   props: ["info", "list"],
@@ -56,22 +61,22 @@ export default {
       },
     };
   },
-   computed: {
+  computed: {
     ...mapGetters({
-      userInfo: "userInfo"
-    })
+      userInfo: "userInfo",
+    }),
   },
   methods: {
-     ...mapActions({
-      changeUser: "changeUser"
+    ...mapActions({
+      changeUser: "changeUser",
     }),
     // 弹框取消
     cancel() {
       if (!this.info.isAdd) {
         // 如果是编辑，就清空数据
-         // 让选中的菜单置空
-          this.$refs.tree.setCheckedKeys([]);
-          this.empty()
+        // 让选中的菜单置空
+        this.$refs.tree.setCheckedKeys([]);
+        this.empty();
       }
       this.info.isshow = false;
     },
@@ -83,26 +88,37 @@ export default {
         status: 1, //状态1正常2禁用
       };
     },
+    checkProps() {
+      return new Promise((resolve, reject) => {
+        if (this.datas.rolename == "") {
+          errorMsg("角色名称不能为空");
+          return;
+        }
+        if ( this.$refs.tree.getCheckedKeys().length === 0) {
+          errorMsg("权限选择不能为空");
+          return;
+        }
+        resolve();
+      });
+    },
     // 点击添加
     add() {
-      if (this.datas.rolename == "") {
-        errorMsg("角色名称不能为空");
-        return;
-      }
-      // 转化成后端要的数据
-      this.datas.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
-      reqRoleAdd(this.datas).then((res) => {
-        if (res.data.code === 200) {
-          // 让选中的菜单置空
-          this.$refs.tree.setCheckedKeys([]);
-          // 通知父组件刷新列表
-          this.$emit("init");
-          // 关闭弹框
-          this.cancel();
-          // 清空数据
-          this.empty();
-          successMsg(res.data.msg);
-        }
+      this.checkProps().then(() => {
+        // 转化成后端要的数据
+        this.datas.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+        reqRoleAdd(this.datas).then((res) => {
+          if (res.data.code === 200) {
+            // 让选中的菜单置空
+            this.$refs.tree.setCheckedKeys([]);
+            // 通知父组件刷新列表
+            this.$emit("init");
+            // 关闭弹框
+            this.cancel();
+            // 清空数据
+            this.empty();
+            successMsg(res.data.msg);
+          }
+        });
       });
     },
     // 菜单列表
@@ -114,39 +130,41 @@ export default {
         }
       });
     },
-  //  获取一条数据
+    //  获取一条数据
     getOne(id) {
       reqGetOne(id).then((res) => {
         if (res.data.code === 200) {
           let menus = JSON.parse(res.data.list.menus);
           this.$refs.tree.setCheckedKeys(menus);
-         
+
           this.datas = res.data.list;
           // 因为没有id，所以需要手动赋值
-           this.datas.id=id
+          this.datas.id = id;
         }
       });
     },
-     //真正的编辑
+    //真正的编辑
     update() {
-       // 转化成后端要的数据
-      this.datas.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
-      reqRoleUpdate(this.datas).then(res=>{
-        if (res.data.code===200) {
-          successMsg(res.data.msg);
+      this.checkProps().then(() => {
+        // 转化成后端要的数据
+        this.datas.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+        reqRoleUpdate(this.datas).then((res) => {
+          if (res.data.code === 200) {
+            successMsg(res.data.msg);
 
-           //如果修改的角色，是当前用户所属的角色，就需要退出登录，重新登录
-          if (this.datas.id == this.userInfo.roleid) {
-            this.changeUser({});
-            this.$router.push("/login");
-            return;
+            //如果修改的角色，是当前用户所属的角色，就需要退出登录，重新登录
+            if (this.datas.id == this.userInfo.roleid) {
+              this.changeUser({});
+              this.$router.push("/login");
+              return;
+            }
+            // 弹框关闭
+            this.cancel();
+            // 通知父组件，更新列表
+            this.$emit("init");
           }
-          // 弹框关闭
-          this.cancel();
-          // 通知父组件，更新列表
-          this.$emit("init")
-        }
-      })
+        });
+      });
     },
   },
   mounted() {
@@ -156,5 +174,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>
